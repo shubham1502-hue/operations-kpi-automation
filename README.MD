@@ -27,6 +27,12 @@ Demonstrate how operational data can be transformed into leadership-ready dashbo
 ## Dashboard Preview
 ![SLA Dashboard](dashboard/SLA_Backlog_Dashboard.png)
 
+## Live Dashboard
+
+View the interactive Tableau dashboard here:
+
+[Open SLA & Backlog Dashboard](https://public.tableau.com/views/SLABacklog/Dashboard1)
+
 ## How to Run
 ```bash
 python src/generate_data.py
