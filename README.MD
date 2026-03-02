@@ -37,3 +37,7 @@ View the interactive Tableau dashboard here:
 ```bash
 python src/generate_data.py
 python src/analysis.py
+
+Strategic Context
+
+This project simulates real-world operational reporting workflows used in large-scale e-commerce and enterprise support environments.
