@@ -1,0 +1,6 @@
+team,total_tickets,sla_met,avg_resolution_hours,total_breaches,sla_compliance_rate
+Onboarding,16172,14612,24.1,1560,0.9035
+Sales Ops,15789,14291,23.94,1498,0.9051
+Shipment,15916,14343,23.94,1573,0.9012
+Support,15955,14423,23.9,1532,0.904
+Training,16168,14650,23.95,1518,0.9061

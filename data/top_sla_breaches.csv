@@ -1,0 +1,11 @@
+ticket_id,team,priority,actual_resolution_hours,sla_target_hours,breach_hours
+T040166,Support,Low,71.97,48,23.97
+T009346,Support,Low,71.97,48,23.97
+T051712,Sales Ops,Low,71.96,48,23.959999999999994
+T044631,Onboarding,Low,71.95,48,23.950000000000003
+T013096,Training,Low,71.95,48,23.950000000000003
+T043156,Shipment,Low,71.92,48,23.92
+T001913,Sales Ops,Low,71.92,48,23.92
+T044571,Shipment,Low,71.9,48,23.900000000000006
+T005352,Support,Low,71.9,48,23.900000000000006
+T018128,Training,Low,71.89,48,23.89
