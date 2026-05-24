@@ -1,9 +1,10 @@
-import pandas as pd
-import numpy as np
-import os
-import json
 import argparse
+import json
+import os
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 
 DEFAULT_SLA_POLICY = {
@@ -15,6 +16,16 @@ DEFAULT_SLA_POLICY = {
     },
     "team_priority_hours": {},
 }
+
+QUEUE_OWNER_MAPPING = {
+    "Support": "Customer Support Lead",
+    "Sales Ops": "Revenue Operations Lead",
+    "Onboarding": "Customer Onboarding Lead",
+    "Shipment": "Fulfillment Operations Lead",
+    "Training": "Enablement Lead",
+}
+
+UNASSIGNED_OWNER = "Unassigned"
 
 
 def load_sla_policy(path=None):
@@ -50,12 +61,26 @@ def apply_sla_policy(df, policy):
     return df
 
 
+def apply_owner_mapping(df):
+    df = df.copy()
+    mapped_owners = df["team"].map(QUEUE_OWNER_MAPPING).fillna(UNASSIGNED_OWNER)
+
+    if "owner" in df.columns:
+        df["owner"] = df["owner"].fillna("").astype(str).str.strip()
+        df["owner"] = np.where(df["owner"] == "", mapped_owners, df["owner"])
+    else:
+        df["owner"] = mapped_owners
+
+    return df
+
+
 def analyze_ops_data(input_path, output_dir, sla_policy_path=None):
 
     # -----------------------------
     # Load Data
     # -----------------------------
     df = pd.read_csv(input_path)
+    df = apply_owner_mapping(df)
     df = apply_sla_policy(df, load_sla_policy(sla_policy_path))
 
     df["created_at"] = pd.to_datetime(df["created_at"])
@@ -109,7 +134,7 @@ def analyze_ops_data(input_path, output_dir, sla_policy_path=None):
     # 2. SLA BY TEAM
     # -----------------------------
     sla_by_team = (
-        df.groupby("team")
+        df.groupby(["team", "owner"])
         .agg(
             total_tickets=("ticket_id", "count"),
             sla_met=("sla_met", "sum"),
@@ -148,6 +173,25 @@ def analyze_ops_data(input_path, output_dir, sla_policy_path=None):
         backlog_trend["total_tickets"]
     ).round(4)
 
+    backlog_by_owner = (
+        df.groupby(["owner", "team"])
+        .agg(
+            total_tickets=("ticket_id", "count"),
+            backlog_count=("backlog_flag", "sum")
+        )
+        .reset_index()
+    )
+
+    backlog_by_owner["backlog_rate"] = (
+        backlog_by_owner["backlog_count"] /
+        backlog_by_owner["total_tickets"]
+    ).round(4)
+
+    backlog_by_owner = backlog_by_owner.sort_values(
+        "backlog_count",
+        ascending=False
+    )
+
     # -----------------------------
     # 4. TOP SLA BREACHES
     # -----------------------------
@@ -159,6 +203,7 @@ def analyze_ops_data(input_path, output_dir, sla_policy_path=None):
             [
                 "ticket_id",
                 "team",
+                "owner",
                 "priority",
                 "actual_resolution_hours",
                 "sla_target_hours",
@@ -177,10 +222,12 @@ def analyze_ops_data(input_path, output_dir, sla_policy_path=None):
     # -----------------------------
     os.makedirs(output_dir, exist_ok=True)
 
-    kpi_summary.to_csv(f"{output_dir}/kpi_summary.csv", index=False)
-    sla_by_team.to_csv(f"{output_dir}/sla_by_team.csv", index=False)
-    backlog_trend.to_csv(f"{output_dir}/backlog_trend.csv", index=False)
-    top_sla_breaches.to_csv(f"{output_dir}/top_sla_breaches.csv", index=False)
+    kpi_summary.to_csv(f"{output_dir}/kpi_summary.csv", index=False, lineterminator="\n")
+    sla_by_team.to_csv(f"{output_dir}/sla_by_team.csv", index=False, lineterminator="\n")
+    backlog_trend.to_csv(f"{output_dir}/backlog_trend.csv", index=False, lineterminator="\n")
+    backlog_by_owner_path = f"{output_dir}/backlog_by_owner.csv"
+    backlog_by_owner.to_csv(backlog_by_owner_path, index=False, lineterminator="\n")
+    top_sla_breaches.to_csv(f"{output_dir}/top_sla_breaches.csv", index=False, lineterminator="\n")
     write_executive_summary(
         output_path=f"{output_dir}/executive_summary.md",
         total_tickets=total_tickets,
@@ -190,6 +237,9 @@ def analyze_ops_data(input_path, output_dir, sla_policy_path=None):
         backlog_delta=backlog_delta,
         top_breach=top_breach,
     )
+
+    if not os.path.isfile(backlog_by_owner_path):
+        raise RuntimeError(f"Expected backlog by owner output at {backlog_by_owner_path}")
 
     # -----------------------------
     # Sanity Print

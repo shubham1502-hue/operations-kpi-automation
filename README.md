@@ -26,6 +26,7 @@ Ops-heavy startups can have ticket data but still miss the operating picture: wh
 - SLA by team output
 - top breach drivers
 - backlog trend data
+- backlog by owner output
 - dashboard preview
 
 ## Before and after
@@ -40,7 +41,7 @@ Before:
 After:
 
 - repeatable ops review
-- team-level SLA view
+- team-level SLA view with owners
 - breach driver list
 - dashboard-ready outputs
 
@@ -98,7 +99,28 @@ The default sample data and examples are synthetic, anonymized, or template-only
 - `data/sla_by_team.csv`: team SLA performance
 - `data/top_sla_breaches.csv`: breach drivers
 - `data/backlog_trend.csv`: backlog trend
+- `data/backlog_by_owner.csv`: backlog accountability by queue owner
 - `dashboard/SLA_Backlog_Dashboard.png`: dashboard preview
+
+## Owner mapping
+
+`src/analysis.py` maps each queue in the `team` column to an accountable owner. If your input CSV already includes an `owner` column, the script keeps that value and only fills blanks from the mapping.
+
+| Team | Default owner |
+| --- | --- |
+| Support | Customer Support Lead |
+| Sales Ops | Revenue Operations Lead |
+| Onboarding | Customer Onboarding Lead |
+| Shipment | Fulfillment Operations Lead |
+| Training | Enablement Lead |
+
+Sample owner-aware outputs:
+
+| Output | Owner field |
+| --- | --- |
+| `data/sla_by_team.csv` | `owner` next to each team scorecard row |
+| `data/top_sla_breaches.csv` | `owner` next to each breach driver |
+| `data/backlog_by_owner.csv` | `owner`, `team`, `backlog_count`, and `backlog_rate` |
 
 ## Example founder workflow
 
@@ -179,12 +201,13 @@ This project shows how to convert ticket operations data into leadership-ready K
 ## What This Repo Includes
 
 - `src/generate_data.py`: generates a synthetic 80,000-row operations ticket dataset.
-- `src/analysis.py`: computes SLA compliance, backlog trends, team scorecards, and top breach records.
+- `src/analysis.py`: computes SLA compliance, backlog trends, owner mappings, team scorecards, and top breach records.
 - `data/ops_tickets.csv`: sample ticket lifecycle dataset.
 - `data/kpi_summary.csv`: summary KPI output.
 - `data/executive_summary.md`: founder-ready Markdown summary output.
 - `data/sla_by_team.csv`: team-level SLA scorecard output.
 - `data/backlog_trend.csv`: monthly backlog trend output.
+- `data/backlog_by_owner.csv`: backlog accountability output by owner and team.
 - `data/top_sla_breaches.csv`: ticket-level breach driver output.
 - `dashboard/SLA_Backlog_Dashboard.png`: dashboard preview image.
 - `requirements.txt`: Python package requirements.
@@ -215,8 +238,9 @@ Core logic:
 - Breach hours = actual resolution hours - SLA target hours when resolution exceeds target.
 - Overall SLA compliance = tickets meeting SLA / total tickets.
 - Average monthly backlog = average monthly count of backlog-flagged tickets.
-- Team scorecard = ticket volume, SLA-met count, average resolution hours, total breaches, and SLA compliance rate by team.
-- Top breach drivers = highest breach-hour tickets with team, priority, actual resolution hours, and SLA target.
+- Team scorecard = ticket volume, SLA-met count, average resolution hours, total breaches, owner, and SLA compliance rate by team.
+- Owner backlog = backlog-flagged tickets grouped by owner and team.
+- Top breach drivers = highest breach-hour tickets with team, owner, priority, actual resolution hours, and SLA target.
 
 Current sample outputs show:
 
@@ -238,11 +262,12 @@ Current sample outputs show:
 
 1. Replace the sample ticket data with a Zendesk, Intercom, HubSpot, Jira, Linear, Freshdesk, or spreadsheet export.
 2. Map your ticket fields to the current schema: team, region, priority, SLA target, resolution hours, and backlog flag.
-3. Tune SLA thresholds so they match your customer promise and internal service levels.
-4. Run the analysis before your weekly operations review.
-5. Review the team scorecard and top breach list with named owners.
-6. Assign interventions for the highest-risk queue or breach driver.
-7. Refresh the dashboard only after the CSV outputs are validated.
+3. Update `QUEUE_OWNER_MAPPING` in `src/analysis.py` so each queue has an accountable owner.
+4. Tune SLA thresholds so they match your customer promise and internal service levels.
+5. Run the analysis before your weekly operations review.
+6. Review the team scorecard, owner backlog, and top breach list with named owners.
+7. Assign interventions for the highest-risk queue or breach driver.
+8. Refresh the dashboard only after the CSV outputs are validated.
 
 ## Minimum Edits Before First Use
 
@@ -250,6 +275,7 @@ Current sample outputs show:
 | --- | --- | --- |
 | Replace ticket data | `data/ops_tickets.csv` or `src/generate_data.py` | Use your real ticket lifecycle, queue, team, priority, and resolution fields. |
 | Map lifecycle fields | `src/analysis.py` | Align KPI logic with your ticketing system's column names and workflow. |
+| Map queue owners | `QUEUE_OWNER_MAPPING` in `src/analysis.py` | Assign one accountable owner to every team or queue. |
 | Tune SLA thresholds | `config/sla_policy.json` | Match what your company considers low, medium, high, and critical service commitments. |
 | Update backlog definition | `src/analysis.py` | Backlog should reflect your real operating risk, not just a sample flag. |
 | Refresh BI outputs | `data/*.csv` | Keep Tableau or other reporting layers aligned with the latest analysis. |
@@ -293,6 +319,7 @@ Team-specific overrides win over the default priority threshold. If a priority i
 - `data/executive_summary.md`: weekly Markdown summary with SLA compliance, backlog trend, top breach driver, and recommended action.
 - `data/sla_by_team.csv`: team-level ticket count, SLA-met count, average resolution hours, breaches, and compliance rate.
 - `data/backlog_trend.csv`: monthly ticket volume, backlog count, and backlog rate.
+- `data/backlog_by_owner.csv`: backlog count and backlog rate by owner and team.
 - `data/top_sla_breaches.csv`: top ticket-level SLA breaches by breach hours.
 - `dashboard/SLA_Backlog_Dashboard.png`: static dashboard preview for the SLA/backlog reporting layer.
 
@@ -303,6 +330,7 @@ Team-specific overrides win over the default priority threshold. If a priority i
 |-- dashboard/
 |  `-- SLA_Backlog_Dashboard.png
 |-- data/
+|  |-- backlog_by_owner.csv
 |  |-- backlog_trend.csv
 |  |-- executive_summary.md
 |  |-- kpi_summary.csv
