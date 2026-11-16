@@ -75,6 +75,43 @@ class SlaPolicyTests(unittest.TestCase):
         mapped = apply_owner_mapping(pd.DataFrame([{"team": "Support", "owner": ""}]))
         self.assertEqual(mapped.loc[0, "owner"], "Customer Support Lead")
 
+    def test_queue_ranking_uses_recurring_breach_burden(self) -> None:
+        tickets = pd.DataFrame(
+            [
+                ("S-1", "Support", "2026-01-01", 104),
+                ("F-1", "Shipment", "2026-01-02", 64),
+                ("F-2", "Shipment", "2026-02-01", 64),
+                ("F-3", "Shipment", "2026-03-01", 3),
+            ],
+            columns=["ticket_id", "team", "created_at", "actual_resolution_hours"],
+        )
+        tickets["resolved_at"] = (
+            pd.to_datetime(tickets["created_at"])
+            + pd.to_timedelta(tickets["actual_resolution_hours"], unit="h")
+        )
+        tickets["priority"] = "Critical"
+        tickets["sla_target_hours"] = 4
+        tickets["backlog_flag"] = 0
+
+        with tempfile.TemporaryDirectory() as tmp:
+            input_path = Path(tmp) / "tickets.csv"
+            output_dir = Path(tmp) / "out"
+            tickets.to_csv(input_path, index=False)
+
+            analyze_ops_data(input_path=input_path, output_dir=output_dir)
+            ranking = pd.read_csv(output_dir / "sla_breach_drivers.csv")
+            summary = (output_dir / "executive_summary.md").read_text(encoding="utf-8")
+
+        first = ranking.iloc[0]
+        self.assertEqual(list(ranking["team"]), ["Shipment", "Support"])
+        self.assertEqual(first["total_breach_hours"], 120)
+        self.assertEqual(first["breach_count"], 2)
+        self.assertAlmostEqual(first["breach_rate"], 2 / 3, places=4)
+        self.assertEqual(first["breach_months"], 2)
+        self.assertEqual(first["sampled_months"], 3)
+        self.assertIn("Start with the Shipment queue.", summary)
+        self.assertIn("Ticket S-1 in Support ran 100.00 hours", summary)
+
 
 if __name__ == "__main__":
     unittest.main()

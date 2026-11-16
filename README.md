@@ -1,12 +1,12 @@
 # Operations KPI Command Center
 
-Operations KPI workflow for SLA compliance, backlog risk, breach drivers, and team-level execution visibility.
+Analyze SLA compliance, backlog flags, and the queues with the largest cumulative SLA overruns. The project includes an 80,000-ticket synthetic dataset and a generated operations review.
 
 <!-- FOUNDER_OS_STANDARD_README -->
 
 ## Portfolio role
 
-This is a supporting operations KPI automation repo. It is useful for showing SLA policy logic, backlog visibility, breach driver analysis, and founder-ready weekly ops summaries. It supports the portfolio as an operations analytics proof point, not as a flagship Founder OS module.
+This project demonstrates operations analytics using a synthetic service-ticket export. It shows how an operator can set SLA policy, identify the first queue to investigate, and use the scoreboard to route follow-up to an owner.
 
 ## The founder problem
 
@@ -24,7 +24,7 @@ Ops-heavy startups can have ticket data but still miss the operating picture: wh
 - KPI summary CSV
 - executive summary Markdown
 - SLA by team output
-- top breach drivers
+- queue-level SLA breach burden and the largest individual breaches
 - backlog trend data
 - backlog by owner output
 - dashboard preview
@@ -100,6 +100,7 @@ The default sample data and examples are synthetic, anonymized, or template-only
 - `data/top_sla_breaches.csv`: breach drivers
 - `data/backlog_trend.csv`: backlog trend
 - `data/backlog_by_owner.csv`: backlog accountability by queue owner
+- `data/sla_breach_drivers.csv`: queue-level ranking with breach counts, rates, hours, and recurrence
 - `dashboard/SLA_Backlog_Dashboard.png`: dashboard preview
 
 ## Owner mapping
@@ -201,7 +202,7 @@ This project shows how to convert ticket operations data into leadership-ready K
 ## What This Repo Includes
 
 - `src/generate_data.py`: generates a synthetic 80,000-row operations ticket dataset.
-- `src/analysis.py`: computes SLA compliance, backlog trends, owner mappings, team scorecards, and top breach records.
+- `src/analysis.py`: computes SLA compliance, backlog trends, owner mappings, team scorecards, and SLA breach burden by queue.
 - `data/ops_tickets.csv`: sample ticket lifecycle dataset.
 - `data/kpi_summary.csv`: summary KPI output.
 - `data/executive_summary.md`: founder-ready Markdown summary output.
@@ -237,10 +238,12 @@ Core logic:
 - SLA met = actual resolution hours <= SLA target hours.
 - Breach hours = actual resolution hours - SLA target hours when resolution exceeds target.
 - Overall SLA compliance = tickets meeting SLA / total tickets.
-- Average monthly backlog = average monthly count of backlog-flagged tickets.
+- Average monthly backlog = average count of backlog-flagged tickets grouped by creation month. For a live month-end backlog, use open status and ticket age as of the reporting date.
 - Team scorecard = ticket volume, SLA-met count, average resolution hours, total breaches, owner, and SLA compliance rate by team.
 - Owner backlog = backlog-flagged tickets grouped by owner and team.
-- Top breach drivers = highest breach-hour tickets with team, owner, priority, actual resolution hours, and SLA target.
+- **Queue ranking** orders teams by total over-target hours, then breach count and number of months with breaches. Over-target hours measure summed SLA overruns across tickets. Breach rate uses all ticket rows in the queue as its denominator. Recurrence counts ticket-creation months with at least one breach.
+- **Individual breaches** list the ten largest ticket overages for incident follow-up. Use the queue ranking to prioritize investigation and check ticket histories and staffing data to explain causes.
+- **Input checks** require one row per ticket, a populated team and creation date, and finite, nonnegative resolution hours and effective SLA targets.
 
 Current sample outputs show:
 
@@ -316,7 +319,8 @@ Team-specific overrides win over the default priority threshold. If a priority i
 ## Outputs
 
 - `data/kpi_summary.csv`: overall SLA compliance, total tickets, and average monthly backlog.
-- `data/executive_summary.md`: weekly Markdown summary with SLA compliance, backlog trend, top breach driver, and recommended action.
+- `data/executive_summary.md`: Markdown summary with SLA compliance, backlog trend, queue priority, largest individual breach, and recommended action.
+- `data/sla_breach_drivers.csv`: ranked queues with volume, breach rate, median and total over-target hours, share of over-target hours, and monthly recurrence.
 - `data/sla_by_team.csv`: team-level ticket count, SLA-met count, average resolution hours, breaches, and compliance rate.
 - `data/backlog_trend.csv`: monthly ticket volume, backlog count, and backlog rate.
 - `data/backlog_by_owner.csv`: backlog count and backlog rate by owner and team.
@@ -335,6 +339,7 @@ Team-specific overrides win over the default priority threshold. If a priority i
 |  |-- executive_summary.md
 |  |-- kpi_summary.csv
 |  |-- ops_tickets.csv
+|  |-- sla_breach_drivers.csv
 |  |-- sla_by_team.csv
 |  `-- top_sla_breaches.csv
 |-- src/

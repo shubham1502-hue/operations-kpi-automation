@@ -5,16 +5,20 @@
 - Total tickets analyzed: 80,000
 - SLA compliance: 90.40%
 - Total SLA breaches: 7,681
-- Average monthly backlog: 1,212.6
+- An average of 1,212.6 backlog-flagged tickets per month
 
 ## Backlog trend
 
-Backlog decreased by 108 tickets from the first to the latest month in the sample.
+The count of backlog-flagged tickets decreased by 108 from the first to the latest ticket-creation month in the sample.
 
-## Top breach driver
+## Queue SLA breach burden
 
-Support had the largest sampled SLA breach: 23.97 hours over target on ticket T040166.
+Shipment contributed 9,633.53 over-target hours (20.6% of the sample total). It had 1,573 breaches across 15,916 tickets (9.88%), with breaches in 10 of 10 ticket-creation months. The median breached ticket ran 3.77 hours over target.
+
+## Largest individual SLA breach
+
+Ticket T040166 in Support ran 23.97 hours over its Low priority target.
 
 ## Recommended action
 
-Review the Support queue first, then inspect similar Low priority tickets for routing, staffing, or escalation gaps.
+Start with the Shipment queue. Use the team scorecard to identify the owner, then compare SLA misses by priority and period. Review ticket histories, workload, and staffing to test possible routing, capacity, or escalation causes.
