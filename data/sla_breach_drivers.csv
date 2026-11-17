@@ -1,0 +1,6 @@
+team,ticket_count,sampled_months,breach_count,total_breach_hours,median_breach_hours,breach_months,breach_rate,share_of_breach_hours
+Shipment,15916,10,1573,9633.53,3.77,10,0.0988,0.2061
+Onboarding,16172,10,1560,9410.5,3.83,10,0.0965,0.2013
+Sales Ops,15789,10,1498,9358.99,3.87,10,0.0949,0.2002
+Training,16168,10,1518,9190.04,3.79,10,0.0939,0.1966
+Support,15955,10,1532,9148.44,3.77,10,0.096,0.1957
