@@ -36,13 +36,13 @@ Before:
 - ticket exports with no owner
 - manual SLA reporting
 - backlog surprises
-- unclear breach drivers
+- limited visibility into recurring SLA misses
 
 After:
 
 - repeatable ops review
 - team-level SLA view with owners
-- breach driver list
+- queue-level SLA ranking and individual breach list
 - dashboard-ready outputs
 
 ## Who this is for
@@ -97,7 +97,7 @@ The default sample data and examples are synthetic, anonymized, or template-only
 - `data/kpi_summary.csv`: top-line ops KPIs
 - `data/executive_summary.md`: founder-ready weekly operations summary
 - `data/sla_by_team.csv`: team SLA performance
-- `data/top_sla_breaches.csv`: breach drivers
+- `data/top_sla_breaches.csv`: largest individual ticket overages
 - `data/backlog_trend.csv`: backlog trend
 - `data/backlog_by_owner.csv`: backlog accountability by queue owner
 - `data/sla_breach_drivers.csv`: queue-level ranking with breach counts, rates, hours, and recurrence
@@ -120,14 +120,14 @@ Sample owner-aware outputs:
 | Output | Owner field |
 | --- | --- |
 | `data/sla_by_team.csv` | `owner` next to each team scorecard row |
-| `data/top_sla_breaches.csv` | `owner` next to each breach driver |
+| `data/top_sla_breaches.csv` | `owner` next to each individual breach |
 | `data/backlog_by_owner.csv` | `owner`, `team`, `backlog_count`, and `backlog_rate` |
 
 ## Example founder workflow
 
 - Monday: refresh ticket export.
 - Tuesday: run KPI analysis.
-- Wednesday: review breach drivers.
+- Wednesday: review queue-level overages and individual exceptions.
 - Thursday: assign operational fixes.
 - Friday: update weekly operating review with decisions.
 
@@ -183,7 +183,7 @@ Use this repo to understand how a founder-facing operator turns messy inputs int
 
 The founder-facing guide above is the fastest path. The original repo-specific notes are preserved below for deeper implementation context.
 
-A founder/operator command center for service delivery health, SLA compliance, backlog risk, breach drivers, and team-level execution visibility.
+A founder/operator command center for service delivery health, SLA compliance, backlog risk, queue-level SLA overruns, and team-level execution visibility.
 
 Early-stage teams lose control of service delivery when SLA breaches, backlog growth, ownership gaps, and execution bottlenecks are scattered across tickets, sheets, and manual reports. This repo turns ticket lifecycle data into a repeatable operations review system that helps founders, ops leads, service delivery teams, and Founder's Office operators see where execution is breaking down and where to intervene first.
 
@@ -194,7 +194,7 @@ Ops-heavy startups often have the raw data but not the operating cadence:
 - SLA breaches are discovered after escalations.
 - Backlog growth is reviewed manually instead of monitored weekly.
 - Team-level ownership gaps are hidden inside ticket exports.
-- Leaders debate symptoms without a clean view of breach drivers.
+- Leaders need queue and ticket evidence to decide where to investigate first.
 - Dashboard work depends on ad hoc data pulls instead of a reusable pipeline.
 
 This project shows how to convert ticket operations data into leadership-ready KPIs, scorecards, and Tableau-ready exports.
@@ -209,7 +209,7 @@ This project shows how to convert ticket operations data into leadership-ready K
 - `data/sla_by_team.csv`: team-level SLA scorecard output.
 - `data/backlog_trend.csv`: monthly backlog trend output.
 - `data/backlog_by_owner.csv`: backlog accountability output by owner and team.
-- `data/top_sla_breaches.csv`: ticket-level breach driver output.
+- `data/top_sla_breaches.csv`: individual ticket overages for incident review.
 - `dashboard/SLA_Backlog_Dashboard.png`: dashboard preview image.
 - `requirements.txt`: Python package requirements.
 - `LICENSE`: MIT license for reuse.
@@ -221,7 +221,7 @@ The CSV files are tracked as sample portfolio outputs. If you regenerate them, r
 1. Generate or replace ticket lifecycle data.
 2. Calculate SLA status and breach hours.
 3. Summarize operational health into KPI, backlog, and team-level outputs.
-4. Review breach drivers by team, priority, and resolution time.
+4. Review queue-level overages and inspect individual tickets by priority and resolution time.
 5. Load the exports into Tableau or another BI layer for weekly ops review.
 6. Use the scorecards to decide where founders or ops leads should intervene.
 
@@ -269,7 +269,7 @@ Current sample outputs show:
 4. Tune SLA thresholds so they match your customer promise and internal service levels.
 5. Run the analysis before your weekly operations review.
 6. Review the team scorecard, owner backlog, and top breach list with named owners.
-7. Assign interventions for the highest-risk queue or breach driver.
+7. Assign an owner to investigate the queue with the most over-target hours and verify the cause before choosing an intervention.
 8. Refresh the dashboard only after the CSV outputs are validated.
 
 ## Minimum Edits Before First Use
@@ -359,7 +359,7 @@ Team-specific overrides win over the default priority threshold. If a priority i
 - For sales ops: track lead routing, quote turnaround, contract ops tasks, and queue aging.
 - For Founder's Office cadence: add owner, intervention, due date, and next review status to the scorecard.
 
-Keep the operating loop simple: measure SLA health, find backlog risk, isolate breach drivers, assign owners, and review progress weekly.
+Measure SLA health, prioritize queues using observed overruns, and use ticket histories to validate the cause before choosing a fix.
 
 ## Portfolio Note
 

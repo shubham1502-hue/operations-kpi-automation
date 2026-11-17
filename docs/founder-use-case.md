@@ -8,7 +8,7 @@ Ops-heavy startups can have ticket data but still miss the operating picture: wh
 
 - KPI summary CSV
 - SLA by team output
-- top breach drivers
+- queue-level SLA ranking and individual ticket overages
 - backlog trend data
 - dashboard preview
 
